@@ -1,0 +1,6 @@
+{
+  "name": "Nura",
+  "description": "A premium, AI-powered social platform built for the global Muslim community.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
