@@ -162,6 +162,63 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
+            // Firebase Cloud Auth & Firestore Card
+            val currentUser by mainViewModel.currentUser.collectAsState()
+            GlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = if (currentUser != null) Icons.Filled.CloudDone else Icons.Filled.Lock,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = if (currentUser != null) "Firebase Auth Connected" else "Sign In with Google",
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Text(
+                                text = if (currentUser != null) (currentUser?.email.takeIf { !it.isNullOrBlank() } ?: "User: ${currentUser?.displayName ?: "Guest"}") else "Sync posts & data with Firestore",
+                                fontSize = 11.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    OutlinedButton(
+                        onClick = { mainViewModel.setAuthSheetOpen(true) },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(if (currentUser != null) "Account" else "Sign In", fontSize = 12.sp)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             // Business Quick Contact Buttons if Business mode is enabled
             if (profile.isBusiness) {
                 Row(

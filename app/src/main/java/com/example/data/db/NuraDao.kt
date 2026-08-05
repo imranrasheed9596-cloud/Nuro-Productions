@@ -85,4 +85,14 @@ interface NuraDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertZakatLog(log: ZakatLogEntity)
+
+    // User Profile
+    @Query("SELECT * FROM user_profile WHERE id = :id LIMIT 1")
+    fun getUserProfileFlow(id: String = "local_user"): Flow<UserProfileEntity?>
+
+    @Query("SELECT * FROM user_profile WHERE id = :id LIMIT 1")
+    suspend fun getUserProfile(id: String = "local_user"): UserProfileEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateUserProfile(profile: UserProfileEntity)
 }

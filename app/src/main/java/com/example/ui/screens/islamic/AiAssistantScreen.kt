@@ -58,7 +58,16 @@ fun AiAssistantScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text("AI Islamic Assistant", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Text("Sourced Citations & Scholarly Differences", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Filled.Language,
+                                contentDescription = "Google Search Grounding",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("gemini-3.5-flash with Google Search Grounding", fontSize = 11.sp, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Medium)
+                        }
                     }
                 }
             },
@@ -98,7 +107,7 @@ fun AiAssistantScreen(
                             modifier = Modifier.size(20.dp)
                         )
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("Consulting authentic Quran & Hadith sources over live AI API...", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Searching live Google web data & authentic sources via gemini-3.5-flash...", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

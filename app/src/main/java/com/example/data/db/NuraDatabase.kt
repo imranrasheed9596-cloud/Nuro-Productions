@@ -14,7 +14,8 @@ import androidx.room.RoomDatabase
         DirectMessageEntity::class,
         CommunityGroupEntity::class,
         QuranBookmarkEntity::class,
-        ZakatLogEntity::class
+        ZakatLogEntity::class,
+        UserProfileEntity::class
     ],
     version = 1,
     exportSchema = false

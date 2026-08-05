@@ -107,3 +107,20 @@ data class ZakatLogEntity(
     val nisabStandard: String = "Gold", // Gold or Silver
     val timestamp: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "user_profile")
+data class UserProfileEntity(
+    @PrimaryKey val id: String = "local_user",
+    val displayName: String = "Nura Member",
+    val username: String = "@nura.member",
+    val email: String = "",
+    val bio: String = "Peace & guidance in daily life 🌿",
+    val avatarUrl: String = "",
+    val coverUrl: String = "",
+    val location: String = "Global",
+    val website: String = "",
+    val isVerified: Boolean = false,
+    val isScholar: Boolean = false,
+    val isBusiness: Boolean = false,
+    val updatedAt: Long = System.currentTimeMillis()
+)

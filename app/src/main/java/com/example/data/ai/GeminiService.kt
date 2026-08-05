@@ -20,19 +20,18 @@ object GeminiService {
         }
 
         val systemPrompt = """
-            You are Nura's AI Islamic Assistant, designed for Muslims worldwide.
+            You are Nura's AI Assistant with live Google Search Grounding, powered by gemini-3.5-flash.
             Mandatory Rules:
-            1. Provide authentic, respectful, and clear guidance.
-            2. Every substantive claim (ruling, verse, or hadith) MUST include a visible source citation (e.g., [Quran 2:255], [Sahih al-Bukhari 123], or [Al-Azhar Fatwa Council]).
-            3. Where legitimate scholarly opinions differ (ikhtilaf across Hanafi, Shafi'i, Maliki, Hanbali schools), transparently outline the differing views rather than presenting one as absolute.
-            4. Include a gentle disclaimer recommending consultation with local trusted scholars for personal rulings.
-            5. Decline to issue binding personal fatwas on complex legal/marital matters with a respectful explanation.
+            1. Provide authentic, accurate, respectful, and up-to-date guidance using Google Search Grounding.
+            2. Every substantive claim, ruling, verse, hadith, or news item MUST include source citations.
+            3. Where legitimate scholarly opinions or viewpoints differ, transparently outline differing views.
+            4. Include a gentle disclaimer recommending consultation with local trusted scholars or official authorities when needed.
         """.trimIndent()
 
         val prompt = "$systemPrompt\n\nUser Question: $userQuery"
 
         try {
-            val responseText = makeApiCall(apiKey, prompt)
+            val responseText = makeApiCall(apiKey, prompt, enableSearchGrounding = true)
             responseText.ifBlank { getFallbackIslamicAnswer(userQuery) }
         } catch (e: Exception) {
             getFallbackIslamicAnswer(userQuery)
@@ -52,7 +51,7 @@ object GeminiService {
         val prompt = "Generate 3 inspiring, short social media captions for a photo about: '$imageContext' with topic '$userTopic'. Return 3 options numbered 1, 2, 3."
 
         try {
-            val text = makeApiCall(apiKey, prompt)
+            val text = makeApiCall(apiKey, prompt, enableSearchGrounding = false)
             val lines = text.lines().filter { it.isNotBlank() }
             if (lines.size >= 3) {
                 lines.take(3).map { it.replace(Regex("^[0-9]+[.\\s-]+"), "").trim() }
@@ -89,7 +88,7 @@ object GeminiService {
         val prompt = "Summarize the following lecture topic/text into timestamped chapter bullet points and a key takeaway:\n\n$transcriptOrTopic"
 
         try {
-            makeApiCall(apiKey, prompt)
+            makeApiCall(apiKey, prompt, enableSearchGrounding = true)
         } catch (e: Exception) {
             "Summary generated for lecture: Key takeaways include patience, sincerity, and continuous learning."
         }
@@ -104,20 +103,20 @@ object GeminiService {
         val prompt = "Translate the following text accurately into $targetLanguage. Only return the translated text:\n\n$text"
 
         try {
-            makeApiCall(apiKey, prompt)
+            makeApiCall(apiKey, prompt, enableSearchGrounding = false)
         } catch (e: Exception) {
             "[Translated to $targetLanguage]: $text"
         }
     }
 
-    private fun makeApiCall(apiKey: String, promptText: String): String {
+    private fun makeApiCall(apiKey: String, promptText: String, enableSearchGrounding: Boolean = true): String {
         val url = URL("$BASE_URL?key=$apiKey")
         val conn = url.openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
         conn.doOutput = true
-        conn.connectTimeout = 15000
-        conn.readTimeout = 15000
+        conn.connectTimeout = 20000
+        conn.readTimeout = 20000
 
         val jsonRequest = JSONObject().apply {
             val contentsArr = JSONArray().apply {
@@ -131,6 +130,16 @@ object GeminiService {
                 put(contentObj)
             }
             put("contents", contentsArr)
+
+            if (enableSearchGrounding) {
+                val toolsArr = JSONArray().apply {
+                    val toolObj = JSONObject().apply {
+                        put("googleSearch", JSONObject())
+                    }
+                    put(toolObj)
+                }
+                put("tools", toolsArr)
+            }
         }
 
         conn.outputStream.use { os ->
@@ -143,12 +152,39 @@ object GeminiService {
             val candidates = responseJson.optJSONArray("candidates")
             if (candidates != null && candidates.length() > 0) {
                 val candidate = candidates.getJSONObject(0)
+                var mainText = ""
                 val content = candidate.optJSONObject("content")
                 val parts = content?.optJSONArray("parts")
                 if (parts != null && parts.length() > 0) {
-                    return parts.getJSONObject(0).optString("text", "")
+                    mainText = parts.getJSONObject(0).optString("text", "")
                 }
+
+                // Extract Grounding Metadata / Sources
+                val groundingMetadata = candidate.optJSONObject("groundingMetadata")
+                val groundingChunks = groundingMetadata?.optJSONArray("groundingChunks")
+
+                val sources = mutableListOf<String>()
+                if (groundingChunks != null) {
+                    for (i in 0 until groundingChunks.length()) {
+                        val chunk = groundingChunks.optJSONObject(i)
+                        val web = chunk?.optJSONObject("web")
+                        val title = web?.optString("title")
+                        val uri = web?.optString("uri")
+                        if (!title.isNullOrBlank() && !uri.isNullOrBlank()) {
+                            sources.add("• [$title]($uri)")
+                        }
+                    }
+                }
+
+                if (sources.isNotEmpty()) {
+                    mainText += "\n\n🌐 **Google Search Grounding Sources:**\n" + sources.distinct().take(5).joinToString("\n")
+                }
+
+                return mainText
             }
+        } else if (enableSearchGrounding) {
+            // Fallback retry without search grounding if error occurs
+            return makeApiCall(apiKey, promptText, enableSearchGrounding = false)
         }
         return ""
     }

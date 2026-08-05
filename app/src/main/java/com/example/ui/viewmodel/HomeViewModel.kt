@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.data.db.NoteEntity
 import com.example.data.db.PostEntity
+import com.example.data.repository.NuraFirestoreRepository
 import com.example.data.repository.NuraRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class HomeViewModel(private val repository: NuraRepository) : ViewModel() {
+
+    private val firestoreRepo = NuraFirestoreRepository()
 
     val posts: StateFlow<List<PostEntity>> = repository.allPosts
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -79,6 +82,7 @@ class HomeViewModel(private val repository: NuraRepository) : ViewModel() {
                 emoji = _selectedNoteEmoji.value
             )
             repository.createNote(note)
+            firestoreRepo.saveNoteToFirestore(note)
             _newNoteText.value = ""
         }
     }
@@ -104,6 +108,7 @@ class HomeViewModel(private val repository: NuraRepository) : ViewModel() {
                 location = location
             )
             repository.createPost(newPost)
+            firestoreRepo.publishPostToFirestore(newPost)
         }
     }
 }

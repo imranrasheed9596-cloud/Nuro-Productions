@@ -53,6 +53,7 @@ fun NuraApp(mainViewModel: MainViewModel = viewModel()) {
     val isComposeOpen by mainViewModel.isComposeOpen.collectAsState()
     val isNotificationsOpen by mainViewModel.isNotificationsOpen.collectAsState()
     val isDesignChooserOpen by mainViewModel.isDesignChooserOpen.collectAsState()
+    val isAuthSheetOpen by mainViewModel.isAuthSheetOpen.collectAsState()
 
     var activeSubScreen by remember { mutableStateOf(SubScreen.NONE) }
     var isEditProfileOpen by remember { mutableStateOf(false) }
@@ -170,6 +171,13 @@ fun NuraApp(mainViewModel: MainViewModel = viewModel()) {
             DesignChooserSheet(
                 mainViewModel = mainViewModel,
                 onDismiss = { mainViewModel.setDesignChooserOpen(false) }
+            )
+        }
+
+        if (isAuthSheetOpen) {
+            AuthSheet(
+                mainViewModel = mainViewModel,
+                onDismiss = { mainViewModel.setAuthSheetOpen(false) }
             )
         }
     }

@@ -78,6 +78,26 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    // Firebase Auth & Google Account
+                    val currentUser by mainViewModel.currentUser.collectAsState()
+                    IconButton(onClick = { mainViewModel.setAuthSheetOpen(true) }) {
+                        Box(contentAlignment = Alignment.TopEnd) {
+                            Icon(
+                                imageVector = if (currentUser != null) Icons.Outlined.AccountCircle else Icons.Outlined.Lock,
+                                contentDescription = "Firebase Auth & Account",
+                                tint = if (currentUser != null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (currentUser != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.primary)
+                                )
+                            }
+                        }
+                    }
+
                     // Design Choose Options
                     IconButton(onClick = { mainViewModel.setDesignChooserOpen(true) }) {
                         Icon(
