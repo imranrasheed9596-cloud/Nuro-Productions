@@ -88,6 +88,9 @@ class FirebaseAuthService(private val context: Context) {
 
             val response = credentialManager.getCredential(context, request)
             Result.success(response)
+        } catch (e: androidx.credentials.exceptions.NoCredentialException) {
+            Log.w("FirebaseAuthService", "No Google account credentials available on this device", e)
+            Result.failure(e)
         } catch (e: GetCredentialException) {
             Log.e("FirebaseAuthService", "CredentialManager request failed", e)
             Result.failure(e)

@@ -149,7 +149,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     _authStatusMessage.value = "Received credential type: ${credential.type}"
                 }
             } else {
-                _authStatusMessage.value = "Google Sign-In canceled or unavailable on this device."
+                val err = launchResult.exceptionOrNull()
+                if (err is androidx.credentials.exceptions.NoCredentialException) {
+                    _authStatusMessage.value = "No Google account registered on this device/emulator. Please sign in with Email or proceed as Guest."
+                } else {
+                    _authStatusMessage.value = "Google Sign-In canceled or unavailable on this device."
+                }
             }
         } catch (e: Exception) {
             _authStatusMessage.value = "Google error: ${e.message}"
